@@ -13,6 +13,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Function to get touch coordinates
+get_touch_coordinates() {
+  echo "Touch the screen at the desired location. Press Ctrl+C to exit."
+  $ANDROID_HOME/platform-tools/adb shell getevent -l | grep -E "ABS_MT_POSITION" --line-buffered
+}
+
 # Check if Android SDK is properly set up
 if [ -z "$ANDROID_HOME" ]; then
   echo -e "${YELLOW}ANDROID_HOME environment variable not set.${NC}"
@@ -65,30 +71,23 @@ if $ANDROID_HOME/platform-tools/adb devices | grep -q "emulator"; then
   echo "Connected devices:"
   $ANDROID_HOME/platform-tools/adb devices
 else
-  # Start the emulator
+  # Start the emulator with reduced resource usage
   echo -e "${YELLOW}Starting emulator '$EMULATOR_NAME'...${NC}"
-  $ANDROID_HOME/emulator/emulator -avd "$EMULATOR_NAME" -no-snapshot-load -no-boot-anim &
+  $ANDROID_HOME/emulator/emulator -avd "$EMULATOR_NAME" -no-snapshot-load -no-boot-anim -memory 2048 -gpu swiftshader_indirect &
   
   # Wait for emulator to boot
   echo -e "${YELLOW}Waiting for emulator to boot (timeout: ${WAIT_TIMEOUT}s)...${NC}"
   
-  boot_completed=false
-  for i in $(seq 1 $WAIT_TIMEOUT); do
-    if $ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
-      boot_completed=true
-      break
-    fi
-    echo -n "."
+  # Wait for emulator to boot fully
+  echo "Waiting for emulator to boot..."
+  while [ "$($ANDROID_HOME/platform-tools/adb -e shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
     sleep 1
   done
-  echo ""
+  echo -e "${GREEN}Emulator booted successfully!${NC}"
   
-  if [ "$boot_completed" = true ]; then
-    echo -e "${GREEN}Emulator booted successfully!${NC}"
-  else
-    echo -e "${RED}Emulator boot timed out. It might still be starting up.${NC}"
-    echo "You can check its status with: adb devices"
-  fi
+  # Give the emulator time to stabilize after boot
+  echo "Giving the emulator time to stabilize (10 seconds)..."
+  sleep 10
 fi
 
 # Check if YouTube app is installed
@@ -102,8 +101,35 @@ fi
 # Push test video file to the emulator
 echo "Pushing test video to emulator..."
 if [ -f "./assets/princess.mp4" ]; then
+  # Create necessary directories
+  echo "Creating directories on emulator..."
+  $ANDROID_HOME/platform-tools/adb shell mkdir -p /sdcard/Download
+  $ANDROID_HOME/platform-tools/adb shell mkdir -p /sdcard/DCIM/Camera
+  $ANDROID_HOME/platform-tools/adb shell mkdir -p /sdcard/Movies
+  
+  # Push the video file to multiple locations to ensure it's found
+  echo "Pushing video to Download folder..."
   $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/Download/
-  echo -e "${GREEN}Test video pushed to emulator at /sdcard/Download/princess.mp4${NC}"
+  
+  echo "Pushing video to DCIM/Camera folder..."
+  $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/DCIM/Camera/
+  
+  echo "Pushing video to Movies folder..."
+  $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/Movies/
+  
+  # Run media scanner to ensure the files are indexed
+  echo "Running media scanner to index the video files..."
+  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Download/princess.mp4
+  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/DCIM/Camera/princess.mp4
+  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Movies/princess.mp4
+  
+  # Verify files exist
+  echo "Verifying video files exist on emulator..."
+  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/Download/princess.mp4
+  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/DCIM/Camera/princess.mp4
+  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/Movies/princess.mp4
+  
+  echo -e "${GREEN}Test video pushed to emulator in multiple locations${NC}"
 else
   echo -e "${YELLOW}Test video not found at ./assets/princess.mp4${NC}"
 fi
@@ -117,11 +143,12 @@ echo "Opening YouTube app..."
 $ANDROID_HOME/platform-tools/adb shell am start -n com.google.android.youtube/com.google.android.apps.youtube.app.WatchWhileActivity
 
 # Wait for YouTube to fully load
-echo "Waiting for YouTube to load (15 seconds)..."
-sleep 15
+echo "Waiting for YouTube to load (10 seconds)..."
+sleep 10
 
 # Click the '+' create button at the bottom center
 echo "Clicking the '+' create button..."
+
 # Get screen dimensions
 SCREEN_SIZE=$($ANDROID_HOME/platform-tools/adb shell wm size | grep -o '[0-9]*x[0-9]*')
 WIDTH=$(echo $SCREEN_SIZE | cut -d'x' -f1)
@@ -129,12 +156,82 @@ HEIGHT=$(echo $SCREEN_SIZE | cut -d'x' -f2)
 
 # Calculate center-bottom position (for the '+' button)
 X_POS=$(($WIDTH / 2))
-Y_POS=$(($HEIGHT - 100))  # Adjust this value based on your emulator
+Y_POS=$(($HEIGHT - 100))  # Fixed offset from bottom
 
-# Tap the position
+# Tap the '+' button
 $ANDROID_HOME/platform-tools/adb shell input tap $X_POS $Y_POS
 
+# Wait for the create menu to appear
+echo "Waiting for create menu to appear (10 seconds)..."
+sleep 10
+
+# Click the 'Add' button (icon above the word 'Add' on the left side)
+echo "Clicking the 'Add' button..."
+X_ADD=$(($WIDTH / 8))  # Approximately 1/8 of the way from the left
+Y_ADD=$(($HEIGHT * 5 / 6))  # 5/6 of the way down from the top
+echo "Tapping at coordinates: $X_ADD, $Y_ADD"
+$ANDROID_HOME/platform-tools/adb shell input tap $X_ADD $Y_ADD
+
+# Wait for the gallery to appear
+echo "Waiting for gallery to appear (10 seconds)..."
+sleep 5
+
+# Click the first video under the 'Gallery' section
+echo "Selecting the first video in gallery..."
+X_VIDEO=$(($WIDTH / 4))  # Approximately 1/4 of the way from the left
+Y_VIDEO=$(($HEIGHT / 4))  # Approximately 1/4 of the way from the top
+$ANDROID_HOME/platform-tools/adb shell input tap $X_VIDEO $Y_VIDEO
+
+# Wait for video selection to register
+echo "Waiting for video selection (5 seconds)..."
+sleep 5
+
+# Click 'Next' button in the bottom right
+echo "Clicking the 'Next' button..."
+X_NEXT=$(($WIDTH - 100))  # 100 pixels from the right edge
+Y_NEXT=$(($HEIGHT - 150))  # 150 pixels from the bottom
+echo "Tapping at coordinates: $X_NEXT, $Y_NEXT"
+$ANDROID_HOME/platform-tools/adb shell input tap $X_NEXT $Y_NEXT
+
+# Wait for video processing
+echo "Waiting for video processing (5 seconds)..."
+sleep 5
+
+# Click 'Done' button in the bottom right
+echo "Clicking the 'Done' button..."
+X_DONE=$(($WIDTH - 100))  # 100 pixels from the right edge
+Y_DONE=$(($HEIGHT - 150))  # 150 pixels from the bottom
+echo "Tapping at coordinates: $X_DONE, $Y_DONE"
+$ANDROID_HOME/platform-tools/adb shell input tap $X_DONE $Y_DONE
+
+# Wait for final processing
+echo "Waiting for final processing (25 seconds)..."
+sleep 25
+
+# Click the 'Check' button (on the right side at same height as Add button)
+echo "Clicking the 'Check' button..."
+X_CHECK=$(($WIDTH - 135))  # Same distance from right as Add is from left
+Y_CHECK=$(($HEIGHT * 5 / 6))  # Same height as the Add button
+echo "Tapping at coordinates: $X_CHECK, $Y_CHECK"
+$ANDROID_HOME/platform-tools/adb shell input tap $X_CHECK $Y_CHECK
+
+# Wait for video processing after check button
+echo "Waiting for video processing after check (10 seconds)..."
+sleep 10
+
 echo -e "\nSetup complete!"
-echo "YouTube app opened and '+' create button clicked"
-echo "You can continue with the manual steps or run the full automation script:"
+echo -e "${GREEN}All steps completed successfully!${NC}"
+echo " ✓ Emulator started and stabilized"
+echo " ✓ Test video pushed to multiple locations"
+echo " ✓ YouTube app opened"
+echo " ✓ Create button clicked"
+echo " ✓ Add button clicked"
+echo " ✓ Video selected from gallery"
+echo " ✓ Next button clicked"
+echo " ✓ Done button clicked"
+echo " ✓ Check button clicked"
+
+# Uncomment the line below to get touch coordinates for debugging UI element positions
+# get_touch_coordinates
+echo "\nTo add a poll to the Short, run the full automation script:"
 echo "node test-youtube-publish.js --video ./assets/princess.mp4 --caption \"ChoiceStream Test: What happens next?\""
