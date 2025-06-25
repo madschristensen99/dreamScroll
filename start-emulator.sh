@@ -343,6 +343,73 @@ sleep 2
 echo "Typing poll question..."
 type_text "What happens next?"
 
+# Calculate poll option coordinates
+POLL_OPTION1_X=$((WIDTH / 2))
+POLL_OPTION1_Y=$((HEIGHT / 3))
+POLL_OPTION2_X=$((WIDTH / 2))
+POLL_OPTION2_Y=$(( (HEIGHT / 3) + 63 ))
+
+# Tap on first poll option field
+echo "Tapping on first poll option field..."
+echo "Tapping at coordinates: $POLL_OPTION1_X, $POLL_OPTION1_Y"
+$ANDROID_HOME/platform-tools/adb shell input tap $POLL_OPTION1_X $POLL_OPTION1_Y
+sleep 1
+
+# Type first poll option
+echo "Typing first poll option..."
+type_text "Yes"
+sleep 1
+
+# Tap on second poll option field
+echo "Tapping on second poll option field..."
+echo "Tapping at coordinates: $POLL_OPTION2_X, $POLL_OPTION2_Y"
+$ANDROID_HOME/platform-tools/adb shell input tap $POLL_OPTION2_X $POLL_OPTION2_Y
+$ANDROID_HOME/platform-tools/adb shell input tap $POLL_OPTION2_X $POLL_OPTION2_Y
+
+sleep 1
+
+# Type second poll option
+echo "Typing second poll option..."
+type_text "Maybe"
+sleep 1
+
+# Calculate coordinates for end poll tap and drag operation
+END_POLL_TAP_X=$((WIDTH / 5))
+END_POLL_TAP_Y=$((HEIGHT / 5))
+DRAG_START_X=$((WIDTH / 2))
+DRAG_START_Y=$((HEIGHT / 2))
+DRAG_END_X=$((WIDTH / 4))
+DRAG_END_Y=$(( (HEIGHT * 7) / 8 ))
+
+# Tap to end poll creation and finalize options
+echo "Tapping to end poll creation..."
+echo "Tapping at coordinates: $END_POLL_TAP_X, $END_POLL_TAP_Y"
+$ANDROID_HOME/platform-tools/adb shell input tap $END_POLL_TAP_X $END_POLL_TAP_Y
+sleep 1
+
+# Drag the poll box to bottom left corner
+echo "Dragging poll box from ($DRAG_START_X, $DRAG_START_Y) to ($DRAG_END_X, $DRAG_END_Y)..."
+$ANDROID_HOME/platform-tools/adb shell input swipe $DRAG_START_X $DRAG_START_Y $DRAG_END_X $DRAG_END_Y 500
+sleep 1
+
+# Calculate coordinates for Next and Upload buttons (bottom right)
+NEXT_BUTTON_X=$((WIDTH - 160))
+NEXT_BUTTON_Y=$((HEIGHT - 160))
+UPLOAD_BUTTON_X=$((WIDTH - 160))
+UPLOAD_BUTTON_Y=$((HEIGHT - 160))
+
+# Click the Next button to proceed
+echo "Clicking the Next button..."
+echo "Tapping at coordinates: $NEXT_BUTTON_X, $NEXT_BUTTON_Y"
+$ANDROID_HOME/platform-tools/adb shell input tap $NEXT_BUTTON_X $NEXT_BUTTON_Y
+sleep 5
+
+# Click the Upload Short button to publish
+echo "Clicking the Upload Short button..."
+echo "Tapping at coordinates: $UPLOAD_BUTTON_X, $UPLOAD_BUTTON_Y"
+$ANDROID_HOME/platform-tools/adb shell input tap $UPLOAD_BUTTON_X $UPLOAD_BUTTON_Y
+sleep 5
+
 echo -e "\nSetup complete!"
 echo -e "${GREEN}All steps completed successfully!${NC}"
 echo " ✓ Emulator started and stabilized"
@@ -357,6 +424,10 @@ echo " ✓ Check button clicked"
 echo " ✓ Sticker button clicked"
 echo " ✓ Poll option selected"
 echo " ✓ Poll question entered"
+echo " ✓ Poll options entered"
+echo " ✓ Poll box repositioned"
+echo " ✓ Next button clicked"
+echo " ✓ Short uploaded"
 
 # Uncomment the line below to get touch coordinates for debugging UI element positions
 # get_touch_coordinates
