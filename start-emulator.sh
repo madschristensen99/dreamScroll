@@ -378,8 +378,8 @@ END_POLL_TAP_X=$((WIDTH / 5))
 END_POLL_TAP_Y=$((HEIGHT / 5))
 DRAG_START_X=$((WIDTH / 2))
 DRAG_START_Y=$((HEIGHT / 2))
-DRAG_END_X=$((WIDTH / 4 + 50))
-DRAG_END_Y=$(( (HEIGHT * 3) / 4 ))
+DRAG_END_X=$((WIDTH / 3))
+DRAG_END_Y=$(( (HEIGHT * 2) / 3 ))
 
 # Tap to end poll creation and finalize options
 echo "Tapping to end poll creation..."
