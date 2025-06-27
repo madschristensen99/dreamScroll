@@ -25,6 +25,9 @@ type_text() {
   local text="$1"
   local i
   local capitalize_next=false
+  local in_symbols_keyboard=false
+  
+  echo "Typing text: '$text'"
   
   # Define keyboard coordinates
   declare -A keyboard
@@ -61,10 +64,12 @@ type_text() {
   keyboard["m"]="837 1950"
   
   # Special keys
-  keyboard[" "]="540 2050"  # Space bar
-  keyboard["caps"]="81 1950"  # Caps lock
-  keyboard["symbols"]="81 2100"  # Special characters button (down from caps)
-  keyboard["?"]="837 1950"  # Question mark (in symbols keyboard, left of the original position)
+  keyboard[" "]="540 2080"  # Space bar
+  keyboard["caps"]="81 1950"  # Caps lock (bottom left)
+  # Using coordinates from memory
+  keyboard["symbols"]="189 2050"  # Special characters button (bottom left)
+  keyboard["abc"]="189 2050"    # ABC key (same position as symbols key)
+  keyboard["?"]="837 1950"  # Question mark (in symbols keyboard, same position as m key)
   
   # Convert text to lowercase for easier processing
   text=$(echo "$text" | tr '[:upper:]' '[:lower:]')
@@ -75,6 +80,13 @@ type_text() {
   # Process each character
   for (( i=0; i<${#text}; i++ )); do
     char="${text:$i:1}"
+    echo "Typing: $char"
+    
+    # Skip special characters
+    if [[ "$char" =~ [\?\!\.\,\-\'\"] ]]; then
+      echo "Skipping special character: $char"
+      continue
+    fi
     
     # Check if we need to capitalize this character
     if [[ "$capitalize_next" = true && "$char" =~ [a-z] ]]; then
@@ -84,29 +96,37 @@ type_text() {
       capitalize_next=false
     fi
     
-    # Check if this is a special character
-    if [[ "$char" = "?" ]]; then
-      echo "Tapping symbols key for special characters"
-      $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard["symbols"]}
+    # Check if this is a space
+    if [[ "$char" = " " ]]; then
+      echo "Typing space"
+      $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard[" "]};
       sleep 0.5
-      
-      echo "Typing: $char"
-      $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard["?"]}
-      sleep 0.5
-    # Normal character
-    elif [[ -n "${keyboard[$char]}" ]]; then
-      echo "Typing: $char"
-      $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard[$char]}
-      sleep 0.5
-      
-      # Set capitalize_next to true after a period followed by a space
-      if [[ "$char" = "." || "$char" = "!" || "$char" = "?" ]]; then
-        capitalize_next=true
-      fi
     else
-      echo "Character not supported: $char"
+      # Switch back to normal keyboard if needed
+      if [[ "$in_symbols_keyboard" = true ]]; then
+        echo "Switching back to normal keyboard"
+        $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard["abc"]}
+        sleep 0.5
+        in_symbols_keyboard=false
+      fi
+      
+      # Handle normal characters
+      if [[ -n "${keyboard[$char]}" ]]; then
+        echo "Typing: $char"
+        $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard[$char]}
+        sleep 0.5
+      else
+        echo "Character not supported: $char (skipping)"
+      fi
     fi
   done
+  
+  # Make sure we're back to the normal keyboard before returning
+  if [[ "$in_symbols_keyboard" = true ]]; then
+    echo "Switching back to normal keyboard before finishing"
+    $ANDROID_HOME/platform-tools/adb shell input tap ${keyboard["abc"]}
+    sleep 0.5
+  fi
 }
 
 # Check if Android SDK is properly set up
@@ -188,9 +208,13 @@ else
   echo -e "${RED}YouTube app is not installed. Please install it from the Play Store.${NC}"
 fi
 
-# Push test video file to the emulator
-echo "Pushing test video to emulator..."
-if [ -f "./assets/princess.mp4" ]; then
+# Push video file to the emulator
+# Use VIDEO_PATH environment variable if set, otherwise use default test video
+VIDEO_PATH=${VIDEO_PATH:-"./assets/princess.mp4"}
+VIDEO_FILENAME=$(basename "$VIDEO_PATH")
+
+echo "Pushing video to emulator: $VIDEO_PATH"
+if [ -f "$VIDEO_PATH" ]; then
   # Create necessary directories
   echo "Creating directories on emulator..."
   $ANDROID_HOME/platform-tools/adb shell mkdir -p /sdcard/Download
@@ -198,14 +222,22 @@ if [ -f "./assets/princess.mp4" ]; then
   $ANDROID_HOME/platform-tools/adb shell mkdir -p /sdcard/Movies
   
   # Push the video file to multiple locations to ensure it's found
-  echo "Pushing video to Download folder..."
-  $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/Download/
+  echo "Pushing video to multiple locations..."
+  $ANDROID_HOME/platform-tools/adb push "$VIDEO_PATH" "/sdcard/Download/$VIDEO_FILENAME"
+  $ANDROID_HOME/platform-tools/adb push "$VIDEO_PATH" "/sdcard/DCIM/Camera/$VIDEO_FILENAME"
+  $ANDROID_HOME/platform-tools/adb push "$VIDEO_PATH" "/sdcard/Movies/$VIDEO_FILENAME"
   
-  echo "Pushing video to DCIM/Camera folder..."
-  $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/DCIM/Camera/
+  # Run media scanner to ensure the files are indexed
+  echo "Running media scanner to index the video files..."
+  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file:///sdcard/Movies/$VIDEO_FILENAME"
   
-  echo "Pushing video to Movies folder..."
-  $ANDROID_HOME/platform-tools/adb push ./assets/princess.mp4 /sdcard/Movies/
+  # Verify files exist
+  echo "Verifying video files exist on emulator..."
+  $ANDROID_HOME/platform-tools/adb shell ls -la "/sdcard/Download/$VIDEO_FILENAME"
+  $ANDROID_HOME/platform-tools/adb shell ls -la "/sdcard/DCIM/Camera/$VIDEO_FILENAME"
+  $ANDROID_HOME/platform-tools/adb shell ls -la "/sdcard/Movies/$VIDEO_FILENAME"
+  
+  echo -e "${GREEN}Video pushed to emulator in multiple locations${NC}"
   
   # Run media scanner to ensure the files are indexed
   echo "Running media scanner to index the video files..."
@@ -285,7 +317,7 @@ $ANDROID_HOME/platform-tools/adb shell input tap $X_NEXT $Y_NEXT
 
 # Wait for video processing
 echo "Waiting for video processing (15 seconds)..."
-sleep 15
+sleep 20
 
 # Click 'Done' button in the bottom right
 echo "Clicking the 'Done' button..."
@@ -339,9 +371,17 @@ echo "Tapping at coordinates: $X_QUESTION_FIELD, $Y_QUESTION_FIELD"
 $ANDROID_HOME/platform-tools/adb shell input tap $X_QUESTION_FIELD $Y_QUESTION_FIELD
 sleep 2
 
-# Type the poll question
+# Type poll question
 echo "Typing poll question..."
-type_text "What happens next?"
+# Use POLL_QUESTION environment variable if set, otherwise use default
+POLL_QUESTION=${POLL_QUESTION:-"What happens next?"}
+echo "Using poll question: $POLL_QUESTION"
+
+# Use a simplified poll question without special characters
+POLL_QUESTION="What happens next"
+echo "Using simplified poll question: $POLL_QUESTION"
+type_text "$POLL_QUESTION"
+sleep 1
 
 # Calculate poll option coordinates
 POLL_OPTION1_X=$((WIDTH / 2))
@@ -357,7 +397,10 @@ sleep 1
 
 # Type first poll option
 echo "Typing first poll option..."
-type_text "Yes"
+# Use POLL_OPTION1 environment variable if set, otherwise use default
+POLL_OPTION1=${POLL_OPTION1:-"Yes"}
+echo "Using poll option 1: $POLL_OPTION1"
+type_text "$POLL_OPTION1"
 sleep 1
 
 # Tap on second poll option field
@@ -370,7 +413,10 @@ sleep 1
 
 # Type second poll option
 echo "Typing second poll option..."
-type_text "Maybe"
+# Use POLL_OPTION2 environment variable if set, otherwise use default
+POLL_OPTION2=${POLL_OPTION2:-"Maybe"}
+echo "Using poll option 2: $POLL_OPTION2"
+type_text "$POLL_OPTION2"
 sleep 1
 
 # Calculate coordinates for end poll tap and drag operation
