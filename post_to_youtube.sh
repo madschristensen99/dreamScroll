@@ -209,8 +209,20 @@ else
 fi
 
 # Push video file to the emulator
-# Use VIDEO_PATH environment variable if set, otherwise use default test video
-VIDEO_PATH=${VIDEO_PATH:-"./assets/princess.mp4"}
+# Use VIDEO_PATH environment variable if set, otherwise find the latest generated video
+if [ -n "$VIDEO_PATH" ]; then
+  echo "Using provided VIDEO_PATH: $VIDEO_PATH"
+else
+  # Find the latest final_movie_*.mp4 file in the current directory
+  VIDEO_PATH=$(find "$(pwd)" -name "final_movie_*.mp4" -type f -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
+  if [ -z "$VIDEO_PATH" ]; then
+    # Fallback to test video if no generated video found
+    VIDEO_PATH="./assets/princess.mp4"
+    echo "No generated video found, using fallback test video"
+  else
+    echo "Using latest generated video: $VIDEO_PATH"
+  fi
+fi
 VIDEO_FILENAME=$(basename "$VIDEO_PATH")
 
 echo "Pushing video to emulator: $VIDEO_PATH"
@@ -238,22 +250,8 @@ if [ -f "$VIDEO_PATH" ]; then
   $ANDROID_HOME/platform-tools/adb shell ls -la "/sdcard/Movies/$VIDEO_FILENAME"
   
   echo -e "${GREEN}Video pushed to emulator in multiple locations${NC}"
-  
-  # Run media scanner to ensure the files are indexed
-  echo "Running media scanner to index the video files..."
-  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Download/princess.mp4
-  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/DCIM/Camera/princess.mp4
-  $ANDROID_HOME/platform-tools/adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Movies/princess.mp4
-  
-  # Verify files exist
-  echo "Verifying video files exist on emulator..."
-  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/Download/princess.mp4
-  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/DCIM/Camera/princess.mp4
-  $ANDROID_HOME/platform-tools/adb shell ls -la /sdcard/Movies/princess.mp4
-  
-  echo -e "${GREEN}Test video pushed to emulator in multiple locations${NC}"
 else
-  echo -e "${YELLOW}Test video not found at ./assets/princess.mp4${NC}"
+  echo -e "${YELLOW}Video file not found at $VIDEO_PATH${NC}"
 fi
 
 # Check YouTube login status

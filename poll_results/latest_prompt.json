@@ -1,0 +1,100 @@
+{
+  "scenes": [
+    {
+      "startTime": 0,
+      "duration": 3,
+      "prompt": "Wide shot of a cozy Texas kitchen with wooden cabinets painted in pastel blue, a farmhouse sink, and a window overlooking a sunny backyard with blooming cacti. A woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wears a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She stands at the counter, surrounded by baking supplies like mixing bowls, flour bags, and colorful icing tubes, pointing confidently at a sketch of a wild, multi-tiered cake design on a notepad. Her expression is determined, with a mischievous grin. Natural sunlight streams through the window, casting a warm golden glow over the scene, creating an optimistic and vibrant atmosphere. Texas-themed decor, like a small cowboy boot figurine, sits on a shelf in the background.",
+      "soundEffect": "Upbeat country-pop music, kitchen clutter sounds, rustling paper",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, confident and playful tone, speaking with an energetic pace and slight giggle at the end.",
+        "text": "Alright, y’all, I’m goin’ bold for this wedding cake. No playin’ it safe!"
+      }
+    },
+    {
+      "startTime": 3,
+      "duration": 1.5,
+      "prompt": "Close-up shot of a woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wearing a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She’s in a cozy Texas kitchen with pastel blue cabinets and baking tools scattered on the counter. Her face is covered in flour smudges as she accidentally sneezes, creating a small flour cloud. Her expression shows comedic shock with wide eyes and an open mouth. Bright natural light from a nearby window highlights the flour dust in the air, creating a humorous, chaotic vibe. A small Texas flag magnet is visible on the fridge in the background.",
+      "soundEffect": "Sneeze sound, flour puff, quick comedic music sting",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, surprised and humorous tone, speaking with a quick, sharp exclamation.",
+        "text": "Oh, bless my soul!"
+      }
+    },
+    {
+      "startTime": 4.5,
+      "duration": 2.5,
+      "prompt": "Medium shot of a cozy Texas kitchen with pastel blue cabinets, a cluttered counter covered in baking pans, and a window showing a sunny day outside. A woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wears a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She’s frantically mixing batter in a large bowl, her posture slightly hunched with intense focus, while batter splatters onto her apron. Her expression is a mix of determination and comic frustration. Warm sunlight floods the room, casting a golden hue and emphasizing the messy, lively atmosphere. A small ceramic armadillo decor sits on a shelf, adding a Texan touch.",
+      "soundEffect": "Whisking sounds, batter splattering, upbeat music with a frantic tempo",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, frustrated yet funny tone, speaking with a hurried pace and exaggerated drawl.",
+        "text": "This batter’s fightin’ me harder than a rodeo bull!"
+      }
+    },
+    {
+      "startTime": 7,
+      "duration": 4,
+      "prompt": "Close-up shot focused on the hands of a woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wearing a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She’s in a cozy Texas kitchen with pastel blue cabinets visible in the soft background. Her hands, covered in icing, struggle to pipe intricate designs onto a cake layer, shaking slightly with effort. Her posture suggests tension, leaning over the counter. Soft afternoon light streams through a window, creating gentle highlights on her hands and the vibrant icing colors, evoking a focused yet stressful atmosphere. A Texas-shaped cutting board sits nearby as a subtle regional detail.",
+      "soundEffect": "Soft piping bag squishing, tense background music, faint heavy breathing",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, stressed but determined tone, speaking with a slow, gritted-teeth pace.",
+        "text": "C’mon now, don’t mess this up... This design’s gotta pop."
+      }
+    },
+    {
+      "startTime": 11,
+      "duration": 2,
+      "prompt": "Medium shot of a woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wearing a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She stands in a cozy Texas kitchen with pastel blue cabinets, staring at a lopsided cake layer on the counter with her hands on her hips. Her expression is one of comic despair, with a dramatic eye-roll and pursed lips. Warm sunlight from a nearby window creates a bright, lively mood despite the mishap. A small cowboy hat magnet on the fridge adds a playful Texan flair in the background.",
+      "soundEffect": "Disappointed sigh, comedic flop sound, lighthearted music sting",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, sarcastic and humorous tone, speaking with a slow, exaggerated drawl.",
+        "text": "Well, ain’t that just peachy!"
+      }
+    },
+    {
+      "startTime": 13,
+      "duration": 4.5,
+      "prompt": "Wide shot of a sunny Texas backyard with blooming wildflowers, a rusty old pickup truck parked nearby, and a small wooden bench under a sprawling oak tree. A woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wears a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She sits on the bench, looking frustrated with slumped shoulders, until her eyes catch the vibrant orange and red hues of a sunset over the horizon. Her expression shifts to wide-eyed inspiration as she grabs a sketchpad from her lap. Golden hour light bathes the scene in a warm, dreamy glow, creating an uplifting and hopeful atmosphere. A small Texas bluebonnet patch in the foreground adds regional charm.",
+      "soundEffect": "Gentle breeze, distant birds chirping, inspiring music swell",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, awestruck and excited tone, speaking with a quickening pace and rising pitch.",
+        "text": "Wait a minute... that sunset! Them colors are my answer for somethin’ bold!"
+      }
+    },
+    {
+      "startTime": 17.5,
+      "duration": 3,
+      "prompt": "Close-up shot of a woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wearing a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She’s in a cozy Texas kitchen with pastel blue cabinets, intensely focused as she paints bold sunset-inspired swirls of orange and red icing onto a cake tier. Her posture is steady, leaning forward with determination, and her expression shows focused excitement with narrowed eyes and a slight smile. Soft evening light from a window casts a warm glow on her face, enhancing the vibrant colors of the icing for a striking visual. A small Texas star decor on the counter adds a regional touch.",
+      "soundEffect": "Soft brush strokes, focused humming, uplifting background music",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, determined and thrilled tone, speaking with a steady, confident pace.",
+        "text": "This here sunset design’s gonna steal the show at the wedding!"
+      }
+    },
+    {
+      "startTime": 20.5,
+      "duration": 2,
+      "prompt": "Medium shot of a cozy Texas kitchen with pastel blue cabinets and a window showing early evening light. A woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wears a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She steps back from the counter, wiping sweat from her brow with a dramatic flourish, looking at her nearly finished cake with a proud smirk. Her posture is relaxed yet triumphant. Warm lighting highlights the bold colors of the cake, creating a satisfying, victorious mood. A small armadillo figurine on a shelf adds a quirky Texan detail in the background.",
+      "soundEffect": "Relieved sigh, triumphant music sting, kitchen quietness",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, proud and playful tone, speaking with a slow, satisfied drawl.",
+        "text": "Hot dang, I’m a cake wrangler!"
+      }
+    },
+    {
+      "startTime": 22.5,
+      "duration": 5,
+      "prompt": "Wide shot of a cozy Texas kitchen with pastel blue cabinets, a farmhouse sink, and a window revealing a soft evening sky. A woman in her late 20s, of average height, athletic build, warm tan skin tone with freckles on her nose and cheeks, with long chestnut brown hair tied up in a messy bun with loose strands framing her face, wears a bright yellow apron over a casual denim shirt and black leggings, often dusted with flour, and comfy white sneakers. She stands proudly next to a stunning multi-tiered wedding cake adorned with bold sunset-inspired swirls of orange, red, and gold, her hands on her hips and a beaming smile on her face. Her posture exudes confidence and joy. Soft evening light pours through the window, illuminating the cake’s vibrant design for a visually striking, meme-able moment. A Texas flag magnet on the fridge and a cowboy boot figurine on a shelf tie the scene to its regional roots, creating a celebratory atmosphere.",
+      "soundEffect": "Triumphant country music swell, soft gasp of awe, faint crickets outside",
+      "dialogue": {
+        "description": "Female voice with a soft Texan drawl, emotional and triumphant tone, speaking with a slower pace and heartfelt delivery.",
+        "text": "Took a chance on somethin’ bold, and y’all, this Texas sunset cake is pure magic."
+      }
+    }
+  ],
+  "question": "What should she tackle next?",
+  "choices": [
+    "A wild cupcake design",
+    "A giant birthday cake"
+  ],
+  "context": "A passionate home baker in her late 20s takes on the bold challenge of creating a unique, eye-catching wedding cake design for a friend’s big day in Texas. This day-in-the-life video captures the humorous struggles, creative chaos, surprising inspiration, and triumphant reveal of a daring cake design, fitting the poll-winning option \"Try a bold design.\""
+}

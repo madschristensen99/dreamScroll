@@ -1,4 +1,6 @@
 // Main application entry point
+const fs = require('fs');
+const path = require('path');
 const grokService = require('./services/grok');
 const movieGenerator = require('./services/movieGenerator');
 const youtubePublisher = require('./services/youtubePublisher');
@@ -32,6 +34,8 @@ async function main() {
     let prompt = 'entertain';
     let caption = null;
     let publishToYouTube = false;
+    let generateOnly = false;
+    let publishOnly = false;
     
     // Process command line arguments
     for (let i = 0; i < args.length; i++) {
@@ -43,6 +47,10 @@ async function main() {
         i++;
       } else if (args[i] === '--publish') {
         publishToYouTube = true;
+      } else if (args[i] === '--generate-only') {
+        generateOnly = true;
+      } else if (args[i] === '--publish-only') {
+        publishOnly = true;
       } else if (!prompt || prompt === 'entertain') {
         // If no specific argument is provided, use it as the prompt
         prompt = args[i];
@@ -52,13 +60,62 @@ async function main() {
     // If no caption is provided, use the prompt as the caption
     caption = caption || prompt;
     
-    if (publishToYouTube) {
+    if (publishOnly) {
+      // Only publish the most recently generated video
+      console.log('Publishing the most recently generated video to YouTube Shorts...');
+      
+      // Find the most recent video file
+      const localFiles = fs.readdirSync(process.cwd());
+      const videoFile = localFiles
+        .filter(file => file.startsWith('final_movie_') && file.endsWith('.mp4'))
+        .sort()
+        .reverse()[0]; // Get the most recent one
+      
+      if (!videoFile) {
+        throw new Error('No video file found. Please generate a video first.');
+      }
+      
+      const videoPath = path.join(process.cwd(), videoFile);
+      console.log(`Using local video file: ${videoPath}`);
+      
+      // Generate poll options from latest prompt data
+      let pollOptions;
+      try {
+        const latestPromptData = JSON.parse(fs.readFileSync('./poll_results/latest_prompt.json', 'utf8'));
+        pollOptions = {
+          question: latestPromptData.question,
+          options: latestPromptData.choices
+        };
+      } catch (error) {
+        console.warn('Could not read poll options from latest_prompt.json, using defaults');
+        pollOptions = {
+          question: 'What happens next?',
+          options: ['Yes', 'Maybe']
+        };
+      }
+      
+      // Publish to YouTube Shorts
+      const shortsUrl = await publishMovieToYouTubeShorts(videoPath, caption, pollOptions);
+      console.log('Video published successfully to YouTube Shorts!');
+      console.log('YouTube Shorts URL:', shortsUrl);
+      
+    } else if (generateOnly) {
+      // Only generate the video
+      console.log(`Creating movie with prompt: "${prompt}"`);
+      const playbackUrl = await handleCreateMovie(prompt);
+      console.log('Movie generated successfully!');
+      console.log('Playback URL:', playbackUrl);
+      
+    } else if (publishToYouTube) {
+      // Generate and publish in one step
       console.log(`Creating and publishing movie with prompt: "${prompt}" and caption: "${caption}"`);
       const result = await createAndPublishMovie(prompt, caption);
       console.log('Movie generated and published successfully!');
       console.log('Playback URL:', result.playbackUrl);
       console.log('YouTube Shorts URL:', result.shortsUrl);
+      
     } else {
+      // Default: just generate the video
       console.log(`Creating movie with prompt: "${prompt}"`);
       const playbackUrl = await handleCreateMovie(prompt);
       console.log('Movie generated successfully!');
@@ -112,10 +169,17 @@ async function createAndPublishMovie(prompt, caption) {
     // Generate movie scene using the story data
     const playbackUrl = await movieGenerator.generateMovieScene(storyData);
     
-    // Extract the local video file path from the playback URL
-    // This assumes the playbackUrl points to a local file or contains the path information
-    const videoPathMatch = playbackUrl.match(/file:\/\/(.+)/) || [];
-    const videoPath = videoPathMatch[1] || playbackUrl;
+    // Get the local video file path - the playbackUrl is a LivePeer URL but we need the local file
+    // The local file is named final_movie_[timestamp].mp4 and is in the current directory
+    const localFiles = fs.readdirSync(process.cwd());
+    const videoFile = localFiles.find(file => file.startsWith('final_movie_') && file.endsWith('.mp4'));
+    
+    if (!videoFile) {
+      throw new Error('Local video file not found. The video generation may have failed.');
+    }
+    
+    const videoPath = path.join(process.cwd(), videoFile);
+    console.log(`Using local video file: ${videoPath}`);
     
     // Generate poll options from story data
     const pollOptions = youtubePublisher.generatePollOptionsFromStory(storyData);

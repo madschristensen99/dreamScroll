@@ -1,9 +1,9 @@
 {
   "question": "What happens next?",
-  "options": ["Fresh baguette", "Buttery croissant"],
+  "options": ["| Try a bold design", "Keep it classic |"],
   "results": [50, 50],
-  "winningOption": "Fresh baguette",
+  "winningOption": "| Try a bold design",
   "winningIndex": 0,
-  "totalVotes": ,
-  "timestamp": "2025-06-28T09:44:04Z"
+  "totalVotes": 0,
+  "timestamp": "2025-06-28T16:41:09Z"
 }

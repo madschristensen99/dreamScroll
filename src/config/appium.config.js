@@ -13,7 +13,7 @@ module.exports = {
     platformName: 'Android',
     platformVersion: '13.0', // Android 13 (API 33)
     appPackage: 'com.google.android.youtube',
-    appActivity: 'com.google.android.apps.youtube.app.WatchWhileActivity',
+    appActivity: 'com.google.android.youtube.HomeActivity',
     automationName: 'UiAutomator2',
     noReset: true, // Preserve app state between sessions (keeps login)
     fullReset: false, // Don't uninstall app after session

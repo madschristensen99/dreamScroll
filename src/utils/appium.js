@@ -21,7 +21,14 @@ async function startAppiumServer(options = {}) {
   
   // Check if server is already running
   try {
-    const response = await axios.get(`http://${host}:${port}/wd/hub/status`, { timeout: 1000 });
+    // Try both Appium 1.x and 2.x URL paths
+    let response;
+    try {
+      response = await axios.get(`http://${host}:${port}/status`, { timeout: 1000 });
+    } catch (e) {
+      // Fall back to old URL structure
+      response = await axios.get(`http://${host}:${port}/wd/hub/status`, { timeout: 1000 });
+    }
     if (response.status === 200) {
       console.log(`Appium server is already running on ${host}:${port}`);
       return;
@@ -84,7 +91,8 @@ async function startAppiumServer(options = {}) {
       setTimeout(() => {
         if (!serverStarted) {
           console.log('Checking if Appium server is running...');
-          axios.get(`http://${host}:${port}/wd/hub/status`, { timeout: 2000 })
+          // Try both Appium 1.x and 2.x URL paths
+          axios.get(`http://${host}:${port}/status`, { timeout: 2000 })
             .then(response => {
               if (response.status === 200) {
                 console.log(`Appium server is running on ${host}:${port}`);

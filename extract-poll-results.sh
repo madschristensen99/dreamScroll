@@ -528,17 +528,60 @@ else
   WINNING_INDEX=1
 fi
 
+# Ensure all variables have valid values for JSON
+# Set defaults for any missing or invalid values
+[ -z "$EXTRACTED_QUESTION" ] && EXTRACTED_QUESTION="What happens next?"
+[ -z "$OPTION1" ] && OPTION1="Yes"
+[ -z "$OPTION2" ] && OPTION2="Maybe"
+[ -z "$OPTION1_PERCENT" ] && OPTION1_PERCENT=50
+[ -z "$OPTION2_PERCENT" ] && OPTION2_PERCENT=50
+[ -z "$WINNING_OPTION" ] && WINNING_OPTION="$OPTION1"
+[ -z "$WINNING_INDEX" ] && WINNING_INDEX=0
+
+# Ensure VOTE_COUNT is a valid number
+if [ -z "$VOTE_COUNT" ] || ! [[ "$VOTE_COUNT" =~ ^[0-9]+$ ]]; then
+  VOTE_COUNT=0
+  echo "Warning: Vote count was invalid or missing, setting to 0"
+fi
+
 # Create JSON result with the extracted poll data
-echo "{" > "$RESULTS_FILE"
-echo "  \"question\": \"$EXTRACTED_QUESTION\"," >> "$RESULTS_FILE"
-echo "  \"options\": [\"$OPTION1\", \"$OPTION2\"]," >> "$RESULTS_FILE"
-echo "  \"results\": [$OPTION1_PERCENT, $OPTION2_PERCENT]," >> "$RESULTS_FILE"
-echo "  \"winningOption\": \"$WINNING_OPTION\"," >> "$RESULTS_FILE"
-echo "  \"winningIndex\": $WINNING_INDEX," >> "$RESULTS_FILE"
-echo "  \"totalVotes\": $VOTE_COUNT," >> "$RESULTS_FILE"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-echo "  \"timestamp\": \"$TIMESTAMP\"" >> "$RESULTS_FILE"
-echo "}" >> "$RESULTS_FILE"
+
+# Create JSON using a heredoc to avoid line-by-line appending
+cat > "$RESULTS_FILE" << EOF
+{
+  "question": "$EXTRACTED_QUESTION",
+  "options": ["$OPTION1", "$OPTION2"],
+  "results": [$OPTION1_PERCENT, $OPTION2_PERCENT],
+  "winningOption": "$WINNING_OPTION",
+  "winningIndex": $WINNING_INDEX,
+  "totalVotes": $VOTE_COUNT,
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+
+# Validate the JSON file
+if command -v jq &> /dev/null; then
+  if ! jq . "$RESULTS_FILE" > /dev/null 2>&1; then
+    echo -e "${RED}Error: Generated JSON is invalid. Using fallback JSON.${NC}"
+    # Create fallback JSON with safe values
+    cat > "$RESULTS_FILE" << EOF
+{
+  "question": "What happens next?",
+  "options": ["Yes", "Maybe"],
+  "results": [50, 50],
+  "winningOption": "Yes",
+  "winningIndex": 0,
+  "totalVotes": 0,
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+  else
+    echo -e "${GREEN}JSON validation successful.${NC}"
+  fi
+else
+  echo -e "${YELLOW}Warning: jq not found, skipping JSON validation.${NC}"
+fi
 
 echo -e "${GREEN}Poll results extracted and saved to $RESULTS_FILE${NC}"
 echo "Poll Question: $EXTRACTED_QUESTION"
@@ -550,5 +593,23 @@ echo "Winning Option: $WINNING_OPTION"
 $ANDROID_HOME/platform-tools/adb shell input keyevent KEYCODE_HOME
 
 echo -e "\n${GREEN}Poll extraction completed successfully!${NC}"
+
+# Clean up screenshots from the device to prevent them from appearing in the YouTube upload queue
+echo "Cleaning up screenshots from the device..."
+$ANDROID_HOME/platform-tools/adb shell rm -f /sdcard/poll_screenshot.png
+$ANDROID_HOME/platform-tools/adb shell rm -f /sdcard/ui_dump.xml
+
+# Also clean up any screenshots in the DCIM/Screenshots directory
+$ANDROID_HOME/platform-tools/adb shell find /sdcard/DCIM/Screenshots -type f -name "*.png" -delete
+
+echo -e "${GREEN}Screenshots cleaned up successfully!${NC}"
+
+# Shut down the emulator
+echo -e "\n${YELLOW}Shutting down emulator...${NC}"
+$ANDROID_HOME/platform-tools/adb -s emulator-5554 emu kill
+
+# Wait for emulator to fully shut down
+sleep 5
+echo -e "${GREEN}Emulator shut down successfully!${NC}"
 
 exit 0

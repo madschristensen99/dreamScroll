@@ -32,11 +32,46 @@ class YouTubeShortsService {
   }
   
   /**
+   * Check if the Android emulator is available
+   * @returns {Promise<boolean>}
+   */
+  async isEmulatorAvailable() {
+    try {
+      const { exec } = require('child_process');
+      return new Promise((resolve) => {
+        exec('adb devices', (error, stdout) => {
+          if (error) {
+            console.error('Error checking emulator status:', error);
+            resolve(false);
+            return;
+          }
+          
+          // Check if the emulator is in the list of connected devices
+          const isAvailable = stdout.includes('emulator') && !stdout.includes('offline');
+          console.log('Emulator availability check result:', isAvailable ? 'AVAILABLE' : 'NOT AVAILABLE');
+          console.log('Connected devices:\n', stdout);
+          resolve(isAvailable);
+        });
+      });
+    } catch (error) {
+      console.error('Error checking emulator availability:', error);
+      return false;
+    }
+  }
+  
+  /**
    * Initialize the Appium driver
    * @returns {Promise<void>}
    */
   async initialize() {
     console.log('Initializing YouTube Shorts service with Appium...');
+    
+    // Check if emulator is available
+    const emulatorAvailable = await this.isEmulatorAvailable();
+    if (!emulatorAvailable) {
+      console.error('Android emulator is not available. Please start the emulator first using ./start-emulator.sh');
+      throw new Error('Android emulator not available. Run ./start-emulator.sh first.');
+    }
     
     try {
       // WebdriverIO capabilities configuration
@@ -58,7 +93,7 @@ class YouTubeShortsService {
         protocol: 'http',
         hostname: new URL(this.config.appiumServerUrl).hostname,
         port: parseInt(new URL(this.config.appiumServerUrl).port || '4723'),
-        path: '/wd/hub',
+        path: '/',  // Updated for Appium 2.x compatibility
         capabilities,
         logLevel: 'error'
       });
@@ -110,9 +145,7 @@ class YouTubeShortsService {
       };
       
       // Step 1: Open YouTube app
-      console.log('Opening YouTube app...');
-      await this.driver.activateApp(this.config.appPackage);
-      await this.driver.pause(3000);
+      await this.openYouTubeApp();
       
       // Step 2: Tap on the create button (+ icon) at the bottom center
       console.log('Tapping create button...');
